@@ -28,6 +28,15 @@ struct stanje
     int, // igrac I
     vector<interakcija> // popis susreta s igracem I
   > povijest;
+
+  interakcija osvjezi(akcija moja, akcija tuda)
+  {
+    interakcija i = make_pair(moja, tuda);
+    povijest[s_kime_trebam_igrati->id].push_back(i);
+    return i;
+  }
+
+
 };
 
 
@@ -59,7 +68,7 @@ struct parametrizirana_strategija : strategija
     osvetoljubivost, anti_osvetoljubivost,
 
   // utjecaj djeljivosti rednog broja na reakciju (xn, xn + 1 (, xn + 2))
-    ritmicnost2[2], ritmicnost3[2],
+    ritmicnost2[2], ritmicnost3[3],
 
   // ovisnost o vecinskoj reakcijigradual_faktor
     utjecaj_vecine,
@@ -80,6 +89,14 @@ struct parametrizirana_strategija : strategija
 
   virtual akcija operator()(const stanje& st)
   {
+
+    /*
+     *
+     * ovdje ide kod koji na osnovu tezina odreduje ponasanje
+     * osnovna ideja: imati w (na pocetku ~= 0.5) kojeg ostale tezine modificiraju
+     *
+     */
+
     return akcija::s;
   }
 
@@ -88,7 +105,7 @@ struct parametrizirana_strategija : strategija
 struct igrac
 {
   strategija *s;
-  int id;
+  int id = 0;
 
   akcija potez(stanje st)
   {

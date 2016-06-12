@@ -5,7 +5,7 @@
 // PRISON, Copyright (C) 1992-1998 by LIFL (SMAC team)
 
 
-#include "definitions.h"
+#include "strukture.h"
 
 enum B_akcija { COOPERATE, DEFECT };
 typedef B_akcija card;

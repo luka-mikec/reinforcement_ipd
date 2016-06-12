@@ -1,4 +1,4 @@
-#include "definitions.h"
+#include "strukture.h"
 #include "beaufils.h"
 
 void tit_for_tat_s_kompom()
@@ -44,20 +44,37 @@ int main()
     bfs::tit_for_tat
   }, 2);
 
-  igrac* ja = new igrac{ new parametrizirana_strategija() };
+  auto moja_strategija = new parametrizirana_strategija();
+  igrac* ja = new igrac{ moja_strategija };
 
   stanje st;
 
-  while (true)
+  parametrizirana_strategija::mutacija prethodna_mut(*moja_strategija);
+  for (int iteracija = 0; iteracija < 1000; ++iteracija)
   {
+
     igrac* i = pop.random_izvuci_igraca();
     st.s_kime_trebam_igrati = i;
 
     auto ishod = st.osvjezi(ja->potez(st), i->potez(st));
+    if (ishod.second == akcija::s)
+    {
+      prethodna_mut.primjena();
+    }
+
+    parametrizirana_strategija::mutacija mut(*moja_strategija);
+    mut.primjena();
+    prethodna_mut = mut.kljucne_mutacije();
+
+    for (auto& val : moja_strategija->vektor_tezina)
+    {
+      cout << val << " ";
+    }
+    cout << endl << "(" << iteracija << ")" << endl;
 
     /*
      *
-     * ovdje treba pozvati izmjenu strategije ovisno o ishod
+     * ovdje treba pozvati izmjenu strategije ovisno o ishodu
      *
      */
   }

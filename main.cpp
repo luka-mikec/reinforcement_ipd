@@ -27,6 +27,8 @@ void tit_for_tat_s_kompom()
 
 int main()
 {
+  srand(314);
+
   populacija pop = klasicna_populacija({
     bfs::all_c, bfs::all_d,
     bfs::gradual,
@@ -62,15 +64,34 @@ int main()
     {
       prethodna_mut.primjena();
     }
+    else
+    {
+      prethodna_mut.anti_primjena();
+    }
 
     parametrizirana_strategija::mutacija mut(*moja_strategija);
     mut.primjena();
     prethodna_mut = mut.kljucne_mutacije();
 
-    for (auto& val : moja_strategija->vektor_tezina)
+    /*for (auto& val : moja_strategija->vektor_tezina)
     {
       cout << val << " ";
-    }
+    }*/
+    cout << "inic_sluc: " << *moja_strategija->inicijalna_slucajnost() << " "
+         << "pos0: " << *moja_strategija->reakcija_za_posljednje_korake() << " "
+        << "pos1: " << *(moja_strategija->reakcija_za_posljednje_korake() + 1) << " "
+        << "pos2: " << *(moja_strategija->reakcija_za_posljednje_korake() + 2) << " "
+        << "prvi: " << *moja_strategija->reakcija_na_prvi() << " "
+        << "osvet: " << *moja_strategija->osvetoljubivost() << " "
+        << "aosvet: " << *moja_strategija->anti_osvetoljubivost() << " "
+        << "r2: " << *moja_strategija->ritmicnost2() << " "
+        << "r2': " << *(moja_strategija->ritmicnost2() + 1) << " "
+        << "r3: " << *moja_strategija->inicijalna_slucajnost() << " "
+        << "r3': " << *(moja_strategija->inicijalna_slucajnost() + 1) << " "
+        << "r3'': " << *(moja_strategija->inicijalna_slucajnost() + 2) << " "
+        << "vec: " << *moja_strategija->inicijalna_slucajnost() << " "
+        << "trajosv: " << *moja_strategija->inicijalna_slucajnost() << " "
+        << endl;
     cout << endl << "(" << iteracija << ")" << endl;
 
     /*

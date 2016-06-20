@@ -28,6 +28,7 @@ std::ostream& operator<<(std::ostream& out, const akcija& val)
 }
 
 typedef pair<akcija, akcija> interakcija;
+const vector<interakcija> prazni_vec_int;
 
 
 struct strategija;
@@ -58,7 +59,10 @@ struct stanje
 
   const vector<interakcija>& povijest_za_trenutnog() const
   {
-    return povijest.at(s_kime_trebam_igrati->id);
+    if (povijest.find(s_kime_trebam_igrati->id) != povijest.end())
+      return povijest.at(s_kime_trebam_igrati->id);
+    else
+      return prazni_vec_int;
   }
 
 };
@@ -165,6 +169,12 @@ struct parametrizirana_strategija : strategija
        s.vektor_tezina[par.first] = par.second.second;
     }
 
+    void anti_primjena()
+    {
+      for (auto& par : *this)
+        s.vektor_tezina[par.first] = par.second.first;
+    }
+
 
     // TODO copy asgn, primjena
 
@@ -234,6 +244,7 @@ struct parametrizirana_strategija : strategija
 
   virtual akcija operator()(const stanje& st)
   {
+    int tr_korak = st.povijest_za_trenutnog().size();
     tezina_t acm = 0;
 
     auto y = procesuiraj_tezinu(inicijalna_slucajnost());
@@ -277,26 +288,30 @@ struct parametrizirana_strategija : strategija
 
     // velika tezina -> ponasati se isto kao protivnik u prvom; mala -> suprotno
     y = procesuiraj_tezinu(this->reakcija_na_prvi());
-    if (y.ut == utjecaj::s_ili_da)
-    {
-      if (nti_korak(st, 0) == akcija::s)
-        acm += 0.3 * (y.tez);
-      else
-        acm -= 0.3 * (y.tez);
-    }
-    else if (y.ut == utjecaj::n_ili_ne)
-    {
-      if (nti_korak(st, 0) == akcija::s)
-        acm -= 0.3 * (y.tez);
-      else
-        acm += 0.3 * (y.tez);
-    }
+    if (tr_korak > 0)
+      if (y.ut == utjecaj::s_ili_da)
+      {
+        if (nti_korak(st, 0) == akcija::s)
+          acm += 0.3 * (y.tez);
+        else
+          acm -= 0.3 * (y.tez);
+      }
+      else if (y.ut == utjecaj::n_ili_ne)
+      {
+        if (nti_korak(st, 0) == akcija::s)
+          acm -= 0.3 * (y.tez);
+        else
+          acm += 0.3 * (y.tez);
+      }
 
 
     // posljednja 3 koraka
     for (int i = 1; i <= 3; ++i)
     {
-      y = procesuiraj_tezinu(this->reakcija_za_posljednje_korake() + (i - 1);
+      if (tr_korak < i)
+        continue;
+
+      y = procesuiraj_tezinu(this->reakcija_za_posljednje_korake() + (i - 1));
       if (y.ut == utjecaj::s_ili_da)
       {
         if (nti_korak(st, -i) == akcija::s)
@@ -388,7 +403,7 @@ struct parametrizirana_strategija : strategija
       else
         acm += 0.3 * (y.tez);
     }
-/*
+
     y = procesuiraj_tezinu(this->trajanje_osvete());
     if (y.ut == utjecaj::s_ili_da)
     {
@@ -396,20 +411,24 @@ struct parametrizirana_strategija : strategija
       if (y.tez > 0.5) // vise gradual
       {
         int ocekivano_trajanje = (y.tez - 0.5) * 2 * izbroji_akcije (st, akcija::n);
-        int
+        int izdrzana_kazna = dobrih_zadnjih_koraka(st);
+        preostalo_kazne = ocekivano_trajanje - izdrzana_kazna;
       }
-      else // vise TFT
+      else if (tr_korak > 1) // vise TFT
       {
-
+        preostalo_kazne = nti_korak(st, -1) == akcija::s ? 0 : 1;
+      }
+      else
+      {
+        preostalo_kazne = 0;
       }
 
+      if ((preostalo_kazne == 0) && (y.tez >= 0.3))
+        acm += 0.6; // prekid osvete
 
-
-      if (v == akcija::s)
-        acm += 0.3 * (y.tez);
-      else
-        acm -= 0.3 * (y.tez);
-    }*/
+      if (preostalo_kazne > 0)
+        acm -= 0.5;
+    }
 
 
     /*

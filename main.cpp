@@ -31,7 +31,6 @@ int main()
 
   populacija pop = klasicna_populacija({
     bfs::all_c, bfs::all_d,
-    bfs::gradual,
     bfs::gradual_killer,
     bfs::hard_majo,
     bfs::hard_tf2t,

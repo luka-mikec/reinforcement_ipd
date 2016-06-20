@@ -218,6 +218,7 @@ struct parametrizirana_strategija : strategija
     mutacija& operator=(const mutacija& mut)
     {
       map::operator=(mut);
+      return *this;
     }
 
   private:

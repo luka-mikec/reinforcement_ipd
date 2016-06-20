@@ -107,6 +107,22 @@ struct parametrizirana_strategija : strategija
       tezina = 0.5;
   }
 
+  enum class utjecaj { n_ili_ne, nista, s_ili_da };
+
+  struct utjecaj_s_tezinom : public pair<utjecaj, tezina_t> {
+    tezina_t tez;
+    utjecaj  ut;
+
+    utjecaj_s_tezinom(const pair<utjecaj, tezina_t>& par) : tez(par.second), ut(par.first) {}
+  };
+
+  utjecaj_s_tezinom procesuiraj_tezinu(vector<tezina_t>::iterator tezina)
+  {
+    tezina_t val = *tezina;
+    return make_pair( val < 1/3 ? utjecaj::n_ili_ne : (val < 2/3 ? utjecaj::nista : utjecaj::s_ili_da),
+                      abs(val < 1/3 ? 3 * val  :  (val < 2/3 ? 0 : 3 * (val - 2/3))));
+  };
+
   struct mutacija :
     public map
     <
@@ -157,6 +173,26 @@ struct parametrizirana_strategija : strategija
 
   virtual akcija operator()(const stanje& st)
   {
+    tezina_t acm = 0;
+
+    auto inic_sl = procesuiraj_tezinu(inicijalna_slucajnost());
+
+    if (inic_sl.ut == utjecaj::s_ili_da)
+    {
+      acm = 0.5 + 0.5 * (inic_sl.tez);
+    }
+    else if (inic_sl.ut == utjecaj::n_ili_ne)
+    {
+      acm = 0.5 - 0.5 * (inic_sl.tez);
+    }
+    else
+    {
+      acm = 0.5;
+    }
+
+
+    
+
 
     /*
      *

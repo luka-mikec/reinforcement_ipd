@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <array>
 #include <set>
 #include <stdexcept>
 #include <cstdlib>
@@ -63,6 +64,20 @@ struct stanje
       return povijest.at(s_kime_trebam_igrati->id);
     else
       return prazni_vec_int;
+  }
+
+  double uspjesnost() const
+  {
+    double s = 0, uk = 0;
+    for (auto &igrac_vek : povijest)
+      for (auto &interakcija : igrac_vek.second)
+      {
+        ++uk;
+        s += interakcija.second == akcija::s;
+      }
+
+    return s / uk;
+
   }
 
 };
@@ -189,7 +204,7 @@ struct parametrizirana_strategija : strategija
     }
 
   private:
-    tezina_t epsilon() { return (rand() % 20 - 10) * 0.02; }
+    tezina_t epsilon() { return (rand() % 20 - 10) * 0.02 ; /* -0.2 do +0.2 */ }
     void clamp(tezina_t& t) { if (t < 0) t = 0; if (t > 1) t = 1; }
   };
 

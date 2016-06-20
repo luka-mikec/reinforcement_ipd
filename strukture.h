@@ -198,7 +198,7 @@ struct parametrizirana_strategija : strategija
     void primjena()
     {
       for (auto& par : *this)
-       s.vektor_tezina[par.first] = par.second.second;
+       s.vektor_tezina[par.first] += par.second.second - par.second.first;
     }
 
     void anti_primjena()
@@ -221,7 +221,7 @@ struct parametrizirana_strategija : strategija
     }
 
   private:
-    tezina_t epsilon() { return (rand() % 20 - 10) * 0.02 ; /* -0.2 do +0.2 */ }
+    tezina_t epsilon() { return (rand() % 20 - 10) * 0.02 * 3; /* -0.2 do +0.2 */ }
     void clamp(tezina_t& t) { if (t < 0) t = 0; if (t > 1) t = 1; }
   };
 

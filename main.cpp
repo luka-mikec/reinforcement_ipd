@@ -67,7 +67,7 @@ int main()
   array<okruzenje, koliko_pokusaja> okruzenja;
 
 
-  for (int iteracija = 0; iteracija < 100; ++iteracija)
+  for (int iteracija = 0; iteracija < 1000; ++iteracija)
   {
 
     bool mutiranje         = iteracija % 2 == 0;
@@ -103,10 +103,14 @@ int main()
         if (ishod.second == akcija::s)
         {
           prethodna_mut.primjena();
+          prethodna_mut.primjena();
+          prethodna_mut.primjena();
+          prethodna_mut.primjena();
         }
         else
         {
           prethodna_mut.anti_primjena();
+
         }
       }
 
@@ -150,7 +154,8 @@ int main()
         int pretinac = i / 100;
 
         okruzenje &okr = okruzenja[i];
-        okr.moja_strategija->vektor_tezina = cuvanje[pretinac].moja_strategija->vektor_tezina;
+        //if (iteracija % 10 == 0)
+          okr.moja_strategija->vektor_tezina = cuvanje[pretinac].moja_strategija->vektor_tezina;
 
         parametrizirana_strategija::mutacija mut(* okr.moja_strategija);
         mut.primjena();
@@ -160,9 +165,7 @@ int main()
 
 
 
-
-
-    cout << "(" << iteracija + 1 << ".)" << endl;
+    cout << "iteracija " << iteracija + 1 << "\t: " << okruzenja[0].st.uspjesnost() << endl;
 
   }
 

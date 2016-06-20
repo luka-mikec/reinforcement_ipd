@@ -72,8 +72,25 @@ struct stanje
     for (auto &igrac_vek : povijest)
       for (auto &interakcija : igrac_vek.second)
       {
-        ++uk;
-        s += interakcija.second == akcija::s;
+        uk += 10;
+        if (interakcija.first == akcija::s)
+        {
+          if (interakcija.second == akcija::s)
+          {
+            s += 6;
+          }
+          else
+            s += 1;
+        }
+        else
+        {
+          if (interakcija.second == akcija::s)
+          {
+            s += 10;
+          }
+          else
+            s += 4;
+        }
       }
 
     return s / uk;

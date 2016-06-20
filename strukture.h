@@ -18,6 +18,15 @@ enum class akcija
 {
   s, n
 };
+std::ostream& operator<<(std::ostream& out, const akcija& val)
+{
+  if (val == akcija::s)
+    out << "s";
+  else
+    out << "n";
+  return out;
+}
+
 typedef pair<akcija, akcija> interakcija;
 
 
@@ -191,7 +200,7 @@ struct parametrizirana_strategija : strategija
     }
 
 
-    
+
 
 
     /*

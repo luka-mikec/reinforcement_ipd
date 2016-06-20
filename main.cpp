@@ -57,6 +57,7 @@ int main()
     st.s_kime_trebam_igrati = i;
 
     auto ishod = st.osvjezi(ja->potez(st), i->potez(st));
+    cout << "[ja: " << ishod.first << ", suigrac:" << ishod.second << "]\n";
     if (ishod.second == akcija::s)
     {
       prethodna_mut.primjena();

@@ -56,6 +56,10 @@ struct stanje
     return i;
   }
 
+  const vector<interakcija>& povijest_za_trenutnog() const
+  {
+    return povijest.at(s_kime_trebam_igrati->id);
+  }
 
 };
 
@@ -179,20 +183,67 @@ struct parametrizirana_strategija : strategija
     void clamp(tezina_t& t) { if (t < 0) t = 0; if (t > 1) t = 1; }
   };
 
+  bool barem_jedan(const stanje& st, akcija a)
+  {
+    for (auto interakcija : st.povijest_za_trenutnog())
+      if (interakcija.second == a)
+        return true;
+
+    return false;
+  }
+
+  akcija nti_korak(const stanje& st, int n)
+  {
+    if (n < 0)
+    {
+      n += st.povijest_za_trenutnog().size();
+    }
+    return st.povijest_za_trenutnog().at(n).second;
+  }
+
+  akcija vecinska_akcija(const stanje& st)
+  {
+    int ss = 0, nn = 0;
+    for (auto interakcija : st.povijest_za_trenutnog())
+      if (interakcija.second == akcija::s)
+        ++ss;
+      else
+        ++nn;
+    return (ss >= nn) ? akcija::s : akcija::n;
+  }
+
+  int izbroji_akcije(const stanje& st, akcija a)
+  {
+    int ss = 0;
+    for (auto interakcija : st.povijest_za_trenutnog())
+      if (interakcija.second == a)
+        ++ss;
+    return ss;
+  }
+
+  int dobrih_zadnjih_koraka(const stanje& st)
+  {
+    int ss = 0;
+    for (auto interakcija : st.povijest_za_trenutnog())
+      if (interakcija.second == akcija::s)
+        ++ ss;
+      else
+        ss = 0;
+    return ss;
+  }
 
   virtual akcija operator()(const stanje& st)
   {
     tezina_t acm = 0;
 
-    auto inic_sl = procesuiraj_tezinu(inicijalna_slucajnost());
-
-    if (inic_sl.ut == utjecaj::s_ili_da)
+    auto y = procesuiraj_tezinu(inicijalna_slucajnost());
+    if (y.ut == utjecaj::s_ili_da)
     {
-      acm = 0.5 + 0.5 * (inic_sl.tez);
+      acm = 0.5 + 0.5 * (y.tez);
     }
-    else if (inic_sl.ut == utjecaj::n_ili_ne)
+    else if (y.ut == utjecaj::n_ili_ne)
     {
-      acm = 0.5 - 0.5 * (inic_sl.tez);
+      acm = 0.5 - 0.5 * (y.tez);
     }
     else
     {
@@ -200,7 +251,165 @@ struct parametrizirana_strategija : strategija
     }
 
 
+    // barem jedna suradnja uzrokuje... (preferirati s?)
+    y = procesuiraj_tezinu(this->anti_osvetoljubivost());
+    if (y.ut == utjecaj::s_ili_da && barem_jedan(st, akcija::s))
+    {
+      acm += 0.3 * (y.tez);
+    }
+    else if (y.ut == utjecaj::n_ili_ne && barem_jedan(st, akcija::s))
+    {
+      acm -= 0.3 * (y.tez);
+    }
 
+
+    // barem jedna nesuradnja uzrokuje... (preferirati n?)
+    y = procesuiraj_tezinu(this->osvetoljubivost());
+    if (y.ut == utjecaj::s_ili_da && barem_jedan(st, akcija::n))
+    {
+      acm += 0.3 * (y.tez);
+    }
+    else if (y.ut == utjecaj::n_ili_ne && barem_jedan(st, akcija::n))
+    {
+      acm -= 0.3 * (y.tez);
+    }
+
+
+    // velika tezina -> ponasati se isto kao protivnik u prvom; mala -> suprotno
+    y = procesuiraj_tezinu(this->reakcija_na_prvi());
+    if (y.ut == utjecaj::s_ili_da)
+    {
+      if (nti_korak(st, 0) == akcija::s)
+        acm += 0.3 * (y.tez);
+      else
+        acm -= 0.3 * (y.tez);
+    }
+    else if (y.ut == utjecaj::n_ili_ne)
+    {
+      if (nti_korak(st, 0) == akcija::s)
+        acm -= 0.3 * (y.tez);
+      else
+        acm += 0.3 * (y.tez);
+    }
+
+
+    // posljednja 3 koraka
+    for (int i = 1; i <= 3; ++i)
+    {
+      y = procesuiraj_tezinu(this->reakcija_za_posljednje_korake() + (i - 1);
+      if (y.ut == utjecaj::s_ili_da)
+      {
+        if (nti_korak(st, -i) == akcija::s)
+          acm += 0.3 * (y.tez);
+        else
+          acm -= 0.3 * (y.tez);
+      }
+      else if (y.ut == utjecaj::n_ili_ne)
+      {
+        if (nti_korak(st, -i) == akcija::s)
+          acm -= 0.3 * (y.tez);
+        else
+          acm += 0.3 * (y.tez);
+      }
+    }
+
+    // tendencija za 2k + 1 korake
+    y = procesuiraj_tezinu(this->ritmicnost2() + 1);
+      if (st.povijest_za_trenutnog().size() % 2 == 0)
+      if (y.ut == utjecaj::s_ili_da)
+      {
+        acm += 0.3 * (y.tez);
+      }
+      else if (y.ut == utjecaj::n_ili_ne)
+      {
+        acm -= 0.3 * (y.tez);
+      }
+    // tendencija za 2k korake
+    y = procesuiraj_tezinu(this->ritmicnost2());
+    if (st.povijest_za_trenutnog().size() % 2 == 1)
+      if (y.ut == utjecaj::s_ili_da)
+      {
+        acm += 0.3 * (y.tez);
+      }
+      else if (y.ut == utjecaj::n_ili_ne)
+      {
+        acm -= 0.3 * (y.tez);
+      }
+
+
+    // tendencija za 3k + 1 korake
+    y = procesuiraj_tezinu(this->ritmicnost3() + 1);
+    if (st.povijest_za_trenutnog().size() % 3 == 0)
+      if (y.ut == utjecaj::s_ili_da)
+      {
+        acm += 0.3 * (y.tez);
+      }
+      else if (y.ut == utjecaj::n_ili_ne)
+      {
+        acm -= 0.3 * (y.tez);
+      }
+    // tendencija za 3k + 2 korake
+    y = procesuiraj_tezinu(this->ritmicnost3() + 2);
+    if (st.povijest_za_trenutnog().size() % 3 == 1)
+      if (y.ut == utjecaj::s_ili_da)
+      {
+        acm += 0.3 * (y.tez);
+      }
+      else if (y.ut == utjecaj::n_ili_ne)
+      {
+        acm -= 0.3 * (y.tez);
+      }
+    // tendencija za 3k korake
+    y = procesuiraj_tezinu(this->ritmicnost3());
+    if (st.povijest_za_trenutnog().size() % 3 == 2)
+      if (y.ut == utjecaj::s_ili_da)
+      {
+        acm += 0.3 * (y.tez);
+      }
+      else if (y.ut == utjecaj::n_ili_ne)
+      {
+        acm -= 0.3 * (y.tez);
+      }
+
+    y = procesuiraj_tezinu(this->utjecaj_vecine());
+    if (y.ut == utjecaj::s_ili_da)
+    {
+      akcija v = vecinska_akcija(st);
+      if (v == akcija::s)
+        acm += 0.3 * (y.tez);
+      else
+        acm -= 0.3 * (y.tez);
+    }
+    else if (y.ut == utjecaj::n_ili_ne)
+    {
+      akcija v = vecinska_akcija(st);
+      if (v == akcija::s)
+        acm -= 0.3 * (y.tez);
+      else
+        acm += 0.3 * (y.tez);
+    }
+/*
+    y = procesuiraj_tezinu(this->trajanje_osvete());
+    if (y.ut == utjecaj::s_ili_da)
+    {
+      int preostalo_kazne = 0;
+      if (y.tez > 0.5) // vise gradual
+      {
+        int ocekivano_trajanje = (y.tez - 0.5) * 2 * izbroji_akcije (st, akcija::n);
+        int
+      }
+      else // vise TFT
+      {
+
+      }
+
+
+
+      if (v == akcija::s)
+        acm += 0.3 * (y.tez);
+      else
+        acm -= 0.3 * (y.tez);
+    }*/
 
 
     /*
@@ -210,7 +419,7 @@ struct parametrizirana_strategija : strategija
      *
      */
 
-    return akcija::s;
+    return (acm >= 0.5) ? akcija::s : akcija::n;
   }
 
 };

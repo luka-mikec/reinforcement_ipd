@@ -65,6 +65,7 @@ int main()
 
   array<okruzenje, koliko_pokusaja> okruzenja;
 
+  stanje test_tft, test_rnd;
 
   for (int iteracija = 0; iteracija < 1000; ++iteracija)
   {
@@ -82,6 +83,15 @@ int main()
      *   ...
      */
 
+    igrac *i = pop.random_izvuci_igraca();
+
+    test_rnd.s_kime_trebam_igrati = test_tft.s_kime_trebam_igrati = i;
+    if (test_tft.povijest_za_trenutnog().size() == 0)
+      test_tft.osvjezi(akcija::s, i->potez(test_tft));
+    else
+      test_tft.osvjezi(nti_korak(test_tft, -1), i->potez(test_tft));
+    test_rnd.osvjezi(rand() % 2 ? akcija::s : akcija::n, i->potez(test_rnd));
+
     for (auto &okr : okruzenja)
     {
       parametrizirana_strategija *moja_strategija = okr.moja_strategija;
@@ -90,7 +100,6 @@ int main()
       parametrizirana_strategija::mutacija &prethodna_mut = okr.prethodna_mut;
 
 
-      igrac *i = pop.random_izvuci_igraca();
       st.s_kime_trebam_igrati = i;
 
       auto ishod = st.osvjezi(ja->potez(st), i->potez(st));
@@ -168,7 +177,9 @@ int main()
 
 
 
-    cout << "iteracija " << iteracija + 1 << "\t: " << okruzenja[0].st.uspjesnost() << endl;
+    cout << "iteracija " << iteracija + 1 << "\t: " << okruzenja[0].st.uspjesnost()
+         << "\ttft: " << test_tft.uspjesnost()
+         << "\trandom: " << test_rnd.uspjesnost() << endl;
 
   }
 

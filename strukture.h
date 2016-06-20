@@ -113,6 +113,56 @@ akcija igrac::potez(stanje st)
 }
 
 
+bool barem_jedan(const stanje& st, akcija a)
+{
+  for (auto interakcija : st.povijest_za_trenutnog())
+    if (interakcija.second == a)
+      return true;
+
+  return false;
+}
+
+akcija nti_korak(const stanje& st, int n)
+{
+  if (n < 0)
+  {
+    n += st.povijest_za_trenutnog().size();
+  }
+  return st.povijest_za_trenutnog().at(n).second;
+}
+
+akcija vecinska_akcija(const stanje& st)
+{
+  int ss = 0, nn = 0;
+  for (auto interakcija : st.povijest_za_trenutnog())
+    if (interakcija.second == akcija::s)
+      ++ss;
+    else
+      ++nn;
+  return (ss >= nn) ? akcija::s : akcija::n;
+}
+
+int izbroji_akcije(const stanje& st, akcija a)
+{
+  int ss = 0;
+  for (auto interakcija : st.povijest_za_trenutnog())
+    if (interakcija.second == a)
+      ++ss;
+  return ss;
+}
+
+int dobrih_zadnjih_koraka(const stanje& st)
+{
+  int ss = 0;
+  for (auto interakcija : st.povijest_za_trenutnog())
+    if (interakcija.second == akcija::s)
+      ++ ss;
+    else
+      ss = 0;
+  return ss;
+}
+
+
 struct klasicna_strategija; // u beaufils.h
 
 struct parametrizirana_strategija : strategija
@@ -226,54 +276,7 @@ struct parametrizirana_strategija : strategija
     void clamp(tezina_t& t) { if (t < 0) t = 0; if (t > 1) t = 1; }
   };
 
-  bool barem_jedan(const stanje& st, akcija a)
-  {
-    for (auto interakcija : st.povijest_za_trenutnog())
-      if (interakcija.second == a)
-        return true;
 
-    return false;
-  }
-
-  akcija nti_korak(const stanje& st, int n)
-  {
-    if (n < 0)
-    {
-      n += st.povijest_za_trenutnog().size();
-    }
-    return st.povijest_za_trenutnog().at(n).second;
-  }
-
-  akcija vecinska_akcija(const stanje& st)
-  {
-    int ss = 0, nn = 0;
-    for (auto interakcija : st.povijest_za_trenutnog())
-      if (interakcija.second == akcija::s)
-        ++ss;
-      else
-        ++nn;
-    return (ss >= nn) ? akcija::s : akcija::n;
-  }
-
-  int izbroji_akcije(const stanje& st, akcija a)
-  {
-    int ss = 0;
-    for (auto interakcija : st.povijest_za_trenutnog())
-      if (interakcija.second == a)
-        ++ss;
-    return ss;
-  }
-
-  int dobrih_zadnjih_koraka(const stanje& st)
-  {
-    int ss = 0;
-    for (auto interakcija : st.povijest_za_trenutnog())
-      if (interakcija.second == akcija::s)
-        ++ ss;
-      else
-        ss = 0;
-    return ss;
-  }
 
   virtual akcija operator()(const stanje& st)
   {

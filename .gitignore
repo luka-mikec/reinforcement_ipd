@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+*.suo
+/reinforcement_ipd/Debug
+/reinforcement_ipd/reinforcement_ipd/Debug
+/reinforcement_ipd/reinforcement_ipd.sdf
+/reinforcement_ipd/reinforcement_ipd.sln
+/reinforcement_ipd/reinforcement_ipd.VC.opendb

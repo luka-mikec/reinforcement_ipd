@@ -13,6 +13,7 @@
 #include <set>
 #include <stdexcept>
 #include <cstdlib>
+#include "reinforcement_ipd\reinforcement_ipd\Generator.h"
 using namespace std;
 
 enum class akcija
@@ -203,7 +204,7 @@ struct parametrizirana_strategija : strategija
     vektor_tezina.resize(14);
 
     for (auto& tezina : vektor_tezina)
-      tezina = 0.5;
+      tezina = -1.0;
   }
 
   enum class utjecaj { n_ili_ne, nista, s_ili_da };
@@ -272,8 +273,12 @@ struct parametrizirana_strategija : strategija
     }
 
   private:
-    tezina_t epsilon() { return (rand() % 20 - 10) * 0.02 * 2; /* -0.2 do +0.2 */ }
+    tezina_t epsilon() {
+		return rand_epsilon->Produce(); /* -0.2 do +0.2 */ }
     void clamp(tezina_t& t) { if (t < 0) t = 0; if (t > 1) t = 1; }
+	Double_Generator *rand_epsilon = new Double_Generator(-0.2, 0.2);
+	Int_Generator *rand_mutation = new Int_Generator(0, 4);
+
   };
 
 
@@ -296,7 +301,6 @@ struct parametrizirana_strategija : strategija
     {
       acm = 0.5;
     }
-
 
     // barem jedna suradnja uzrokuje... (preferirati s?)
     y = procesuiraj_tezinu(this->anti_osvetoljubivost());
@@ -369,22 +373,22 @@ struct parametrizirana_strategija : strategija
       if (st.povijest_za_trenutnog().size() % 2 == 0)
       if (y.ut == utjecaj::s_ili_da)
       {
-        acm += 0.3 * (y.tez);
+        acm += 0.1 * (y.tez);
       }
       else if (y.ut == utjecaj::n_ili_ne)
       {
-        acm -= 0.3 * (y.tez);
+        acm -= 0.1 * (y.tez);
       }
     // tendencija za 2k korake
     y = procesuiraj_tezinu(this->ritmicnost2());
     if (st.povijest_za_trenutnog().size() % 2 == 1)
       if (y.ut == utjecaj::s_ili_da)
       {
-        acm += 0.3 * (y.tez);
+        acm += 0.1 * (y.tez);
       }
       else if (y.ut == utjecaj::n_ili_ne)
       {
-        acm -= 0.3 * (y.tez);
+        acm -= 0.1 * (y.tez);
       }
 
 
@@ -393,33 +397,33 @@ struct parametrizirana_strategija : strategija
     if (st.povijest_za_trenutnog().size() % 3 == 0)
       if (y.ut == utjecaj::s_ili_da)
       {
-        acm += 0.3 * (y.tez);
+        acm += 0.1 * (y.tez);
       }
       else if (y.ut == utjecaj::n_ili_ne)
       {
-        acm -= 0.3 * (y.tez);
+        acm -= 0.1 * (y.tez);
       }
     // tendencija za 3k + 2 korake
     y = procesuiraj_tezinu(this->ritmicnost3() + 2);
     if (st.povijest_za_trenutnog().size() % 3 == 1)
       if (y.ut == utjecaj::s_ili_da)
       {
-        acm += 0.3 * (y.tez);
+        acm += 0.1 * (y.tez);
       }
       else if (y.ut == utjecaj::n_ili_ne)
       {
-        acm -= 0.3 * (y.tez);
+        acm -= 0.1 * (y.tez);
       }
     // tendencija za 3k korake
     y = procesuiraj_tezinu(this->ritmicnost3());
     if (st.povijest_za_trenutnog().size() % 3 == 2)
       if (y.ut == utjecaj::s_ili_da)
       {
-        acm += 0.3 * (y.tez);
+        acm += 0.1 * (y.tez);
       }
       else if (y.ut == utjecaj::n_ili_ne)
       {
-        acm -= 0.3 * (y.tez);
+        acm -= 0.1 * (y.tez);
       }
 
     y = procesuiraj_tezinu(this->utjecaj_vecine());
@@ -511,7 +515,7 @@ parametrizirana_strategija::mutacija::mutacija(parametrizirana_strategija &_s) :
   for (int i = 0; i < s.vektor_tezina.size(); ++i)
   {
     (*this)[i].first = (*this)[i].second = s.vektor_tezina[i];
-    if (rand() % 5 == 0)
+    if (rand_mutation->Produce() % 5 == 0)
       clamp((*this)[i].second += epsilon());
   }
 }
@@ -520,8 +524,15 @@ parametrizirana_strategija::mutacija::mutacija(parametrizirana_strategija &_s) :
 struct populacija
 {
   vector<igrac*> obicni_igraci, mutanti;
+  igrac* random_izvuci_igraca() { 
+	  if (rand == NULL)
+	  {
+		  rand = new Int_Generator(0, obicni_igraci.size() - 1);
+	  }
+	  return obicni_igraci[rand->Produce()]; /* zasad samo obicni */ }
 
-  igrac* random_izvuci_igraca() { return obicni_igraci[rand() % obicni_igraci.size()]; /* zasad samo obicni */ }
+private:
+	Int_Generator *rand = NULL;
 };
 
 

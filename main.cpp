@@ -27,7 +27,8 @@ void tit_for_tat_s_kompom()
 
 int main()
 {
-  srand(314);
+	Int_Generator *rand = new Int_Generator(0, 1);
+  //srand(314);
 
   populacija pop = klasicna_populacija({
     bfs::all_c, bfs::all_d,
@@ -45,7 +46,7 @@ int main()
     bfs::tit_for_tat
   }, 2);
 
-  const int koliko_pokusaja = 500;
+  const int koliko_pokusaja = 1;
   struct okruzenje
   {
     parametrizirana_strategija* moja_strategija;
@@ -90,7 +91,7 @@ int main()
       test_tft.osvjezi(akcija::s, i->potez(test_tft));
     else
       test_tft.osvjezi(nti_korak(test_tft, -1), i->potez(test_tft));
-    test_rnd.osvjezi(rand() % 2 ? akcija::s : akcija::n, i->potez(test_rnd));
+    test_rnd.osvjezi(rand->Produce() ? akcija::s : akcija::n, i->potez(test_rnd));
 
     for (auto &okr : okruzenja)
     {
@@ -122,7 +123,6 @@ int main()
         else
         {
           prethodna_mut.anti_primjena();
-
         }
       }
 
@@ -154,25 +154,28 @@ int main()
 
     if (mutiranje)
     {
-      sort(okruzenja.begin(), okruzenja.end(), [&](const okruzenje& a, const okruzenje& b)
+      /*sort(okruzenja.begin(), okruzenja.end(), [&](const okruzenje& a, const okruzenje& b)
       {
         return a.st.uspjesnost() > b.st.uspjesnost();
-      });
+      });*/
 
       // pretp: 500 pokusaja
-      okruzenje cuvanje[] = {okruzenja[0], okruzenja[1], okruzenja[2], okruzenja[3], okruzenja[4]};
-      for (int i = 0; i < koliko_pokusaja; ++i)
-      {
-        int pretinac = i / 100;
+      //okruzenje cuvanje[] = {okruzenja[0], okruzenja[1], okruzenja[2], okruzenja[3], okruzenja[4]};
+    //  for (int i = 0; i < koliko_pokusaja; ++i)
+    //  {
+    //    int pretinac = i / 100;
 
-        okruzenje &okr = okruzenja[i];
-        //if (iteracija % 10 == 0)
-          okr.moja_strategija->vektor_tezina = cuvanje[pretinac].moja_strategija->vektor_tezina;
+    //    okruzenje &okr = okruzenja[i];
+    //    //if (iteracija % 10 == 0)
+    //      okr.moja_strategija->vektor_tezina = cuvanje[pretinac].moja_strategija->vektor_tezina;
 
-        parametrizirana_strategija::mutacija mut(* okr.moja_strategija);
-        mut.primjena();
-        okr.prethodna_mut = mut.kljucne_mutacije();
-      }
+    //    parametrizirana_strategija::mutacija mut(* okr.moja_strategija);
+    //    mut.primjena();
+    //    okr.prethodna_mut = mut.kljucne_mutacije();
+    //  }
+		parametrizirana_strategija::mutacija mut(*okruzenja[0].moja_strategija);
+		mut.primjena();
+		okruzenja[0].prethodna_mut = mut.kljucne_mutacije();
     }
 
 
@@ -188,10 +191,10 @@ int main()
     cout << okruzenje.st.uspjesnost() << endl;
   }
 
-  sort(okruzenja.begin(), okruzenja.end(), [&](const okruzenje& a, const okruzenje& b)
+/*  sort(okruzenja.begin(), okruzenja.end(), [&](const okruzenje& a, const okruzenje& b)
   {
     return a.st.uspjesnost() > b.st.uspjesnost();
-  });
+  })*/;
 
   auto *moja_strategija = okruzenja[0].moja_strategija;
   cout << "inic_sluc: " << *moja_strategija->inicijalna_slucajnost() << " "

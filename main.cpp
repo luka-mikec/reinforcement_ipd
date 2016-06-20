@@ -103,8 +103,12 @@ int main()
         {
           prethodna_mut.primjena();
           prethodna_mut.primjena();
-          prethodna_mut.primjena();
-          prethodna_mut.primjena();
+
+          if (ishod.first == akcija::n)
+          {
+            prethodna_mut.primjena();
+            prethodna_mut.primjena();
+          }
         }
         else
         {

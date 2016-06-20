@@ -77,7 +77,7 @@ struct stanje
         {
           if (interakcija.second == akcija::s)
           {
-            s += 6;
+            s += 8;
           }
           else
             s += 1;
@@ -222,7 +222,7 @@ struct parametrizirana_strategija : strategija
     }
 
   private:
-    tezina_t epsilon() { return (rand() % 20 - 10) * 0.02 * 3; /* -0.2 do +0.2 */ }
+    tezina_t epsilon() { return (rand() % 20 - 10) * 0.02 * 2; /* -0.2 do +0.2 */ }
     void clamp(tezina_t& t) { if (t < 0) t = 0; if (t > 1) t = 1; }
   };
 
@@ -508,7 +508,7 @@ parametrizirana_strategija::mutacija::mutacija(parametrizirana_strategija &_s) :
   for (int i = 0; i < s.vektor_tezina.size(); ++i)
   {
     (*this)[i].first = (*this)[i].second = s.vektor_tezina[i];
-    if (rand() % 10 == 0)
+    if (rand() % 5 == 0)
       clamp((*this)[i].second += epsilon());
   }
 }

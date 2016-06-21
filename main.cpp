@@ -158,7 +158,8 @@ int main()
 			else if (primjena_mutacije && ishod.first == akcija::s && ishod.second == akcija::n)
 			{
 				//nagradi(prethodna_mut, 0);
-			}
+        prethodna_mut.anti_primjena();
+      }
 			//if (primjena_mutacije)
 			//{
 			//  if (ishod.second == akcija::s)

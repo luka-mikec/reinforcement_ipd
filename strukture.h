@@ -512,8 +512,8 @@ struct parametrizirana_strategija : strategija
         Z_s = prozori[adresa + 1];
       if (Z_n > 2 * Z_s)
         acm -= 5;
-      if (Z_s > 2 * Z_n)
-        acm += 5;
+      //if (Z_s > 2 * Z_n)
+      //  acm += 5;
 
       // bez prozora: 73
       // > 2 *, +-1 daje 73

@@ -13,7 +13,7 @@
 #include <set>
 #include <stdexcept>
 #include <cstdlib>
-#include "reinforcement_ipd\reinforcement_ipd\Generator.h"
+#include "reinforcement_ipd/reinforcement_ipd/Generator.h"
 using namespace std;
 
 

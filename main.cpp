@@ -75,7 +75,8 @@ int main()
 	stanje test_tft, test_rnd, test_grad;
 	int test_grad_cnt = 0;
 
-
+  int jas, jan, onis, onin;
+  jas = jan = onis = onin = 0;
 	for (int iteracija = 0; iteracija < 1000; ++iteracija)
 	{
 
@@ -137,6 +138,8 @@ int main()
 			st.s_kime_trebam_igrati = i;
 
 			auto ishod = st.osvjezi(ja->potez(st), i->potez(st));
+      if (ishod.first == akcija::s) ++jas; else ++jan;
+      if (ishod.second == akcija::s) ++onis; else ++onin;
 			// cout << "[ja: " << ishod.first << ", suigrac:" << ishod.second << "]\n";
 
 			if (primjena_mutacije && ishod.first == akcija::n && ishod.second == akcija::s)
@@ -209,7 +212,9 @@ int main()
 		cout << "iteracija " << iteracija + 1 << "\t: " << okruzenja[0].st.uspjesnost()
 			<< "\ttft: " << test_tft.uspjesnost()
 			<< "\trandom: " << test_rnd.uspjesnost()
-			<< "\tgradual: " << test_grad.uspjesnost() << endl;
+			<< "\tgradual: " << test_grad.uspjesnost()
+      << "\tja, oni: " << jas << " " << jan << " " << onis << " " << onin
+      << endl;
 
 	}
 
@@ -251,7 +256,7 @@ int main()
 	test_tft = stanje(), test_rnd = stanje(), test_grad = stanje();
 	test_grad_cnt = 0;
 
-
+  jas = jan = onis = onin = 0;
 	for (int iteracija = 0; iteracija < 1000; ++iteracija)
 	{
 		igrac *i = pop.random_izvuci_igraca();
@@ -299,13 +304,17 @@ int main()
 			st.s_kime_trebam_igrati = i;
 
 			auto ishod = st.osvjezi(ja->potez(st), i->potez(st));
+      if (ishod.first == akcija::s) ++jas; else ++jan;
+      if (ishod.second == akcija::s) ++onis; else ++onin;
 
 		}
 
 		cout << "test iteracija " << iteracija + 1 << "\t: " << okruzenja[0].st.uspjesnost()
 			<< "\ttft: " << test_tft.uspjesnost()
 			<< "\trandom: " << test_rnd.uspjesnost()
-			<< "\tgradual: " << test_grad.uspjesnost() << endl;
+			<< "\tgradual: " << test_grad.uspjesnost()
+      << "\tja, oni: " << jas << " " << jan << " " << onis << " " << onin
+      << endl;
 
 	}
 

@@ -1,5 +1,12 @@
 #include "strukture.h"
 #include "beaufils.h"
+#include <fstream>
+
+#define PRINTER(name) printer(#name)
+
+string printer(string name) {
+	return name;
+}
 
 void tit_for_tat_s_kompom()
 {
@@ -32,51 +39,114 @@ void nagradi(parametrizirana_strategija::mutacija& mut, int n) {
 	}
 };
 
+Int_Generator *gen = new Int_Generator(0, 1);
+
+populacija pop = klasicna_populacija({
+	bfs::all_c, bfs::all_d,
+	bfs::gradual_killer,
+	bfs::hard_majo,
+	bfs::hard_tf2t,
+	bfs::hard_tft,
+	bfs::mistrust,
+	bfs::per_ccd,
+	bfs::per_ddc,
+	bfs::prober,
+	bfs::soft_majo,
+	bfs::soft_tf2t,
+	bfs::spiteful,
+	bfs::tit_for_tat
+}, 1);
+
+const int koliko_pokusaja = 1;
+struct okruzenje
+{
+	parametrizirana_strategija* moja_strategija;
+	igrac* ja;
+	stanje st;
+	parametrizirana_strategija::mutacija prethodna_mut; //, pretprethodna_mut;
+
+	okruzenje() : moja_strategija(new parametrizirana_strategija()),
+		ja(new igrac{ moja_strategija }),
+		prethodna_mut(*moja_strategija)
+		// , pretprethodna_mut(*moja_strategija)
+	{
+
+	}
+
+};
+
+array<okruzenje, koliko_pokusaja> okruzenja;
+
+stanje test_tft, test_rnd, test_grad;
+int test_grad_cnt = 0;
+
+int jas = 0, jan = 0, onis = 0, onin = 0;
+
+void kolo(int iteracija, ostream &file)
+{
+	igrac *i = pop.random_izvuci_igraca();
+
+	test_rnd.s_kime_trebam_igrati = test_tft.s_kime_trebam_igrati = test_grad.s_kime_trebam_igrati = i;
+	if (test_tft.povijest_za_trenutnog().size() == 0)
+		test_tft.osvjezi(akcija::s, i->potez(test_tft));
+	else
+		test_tft.osvjezi(nti_korak(test_tft, -1), i->potez(test_tft));
+	test_rnd.osvjezi(gen->Produce() ? akcija::s : akcija::n, i->potez(test_rnd));
+
+	akcija akc(akcija::s); // za gradual
+	if (test_grad.povijest_za_trenutnog().size() == 0)
+	{
+		test_grad_cnt = 0;
+	}
+	else if ((test_grad_cnt == 1) || (test_grad_cnt == 2))
+	{
+		test_grad_cnt--;
+		akc = akcija::s;
+	}
+	else if (test_grad_cnt > 2)
+	{
+		test_grad_cnt--;
+		akc = akcija::n;
+	}
+	else if (nti_korak(test_grad, -1) == akcija::n)
+	{
+		test_grad_cnt = izbroji_akcije(test_grad, akcija::n) + 1;
+		akc = akcija::n;
+	}
+	else
+		akc = akcija::s;
+	test_grad.osvjezi(akc, i->potez(test_grad));
+
+
+	auto &okr = okruzenja[0];
+	{
+		parametrizirana_strategija *moja_strategija = okr.moja_strategija;
+		igrac *ja = okr.ja;
+		stanje &st = okr.st;
+		parametrizirana_strategija::mutacija &prethodna_mut = okr.prethodna_mut;
+
+
+		st.s_kime_trebam_igrati = i;
+
+		auto ishod = st.osvjezi(ja->potez(st), i->potez(st));
+		if (ishod.first == akcija::s) ++jas; else ++jan;
+		if (ishod.second == akcija::s) ++onis; else ++onin;
+
+	}
+
+	file << iteracija + 1 << ";" << okruzenja[0].st.uspjesnost()
+		<< ";" << test_tft.uspjesnost()
+		<< ";" << test_rnd.uspjesnost()
+		<< ";" << test_grad.uspjesnost()
+		<< ";" << jas << ";" << jan << ";" << onis << ";" << onin << ";\n";
+}
 int main()
 {
-	Int_Generator *rand = new Int_Generator(0, 1);
 
-	populacija pop = klasicna_populacija({
-	  bfs::all_c, bfs::all_d,
-	  bfs::gradual_killer,
-	  bfs::hard_majo,
-	  bfs::hard_tf2t,
-	  bfs::hard_tft,
-	  bfs::mistrust,
-	  bfs::per_ccd,
-	  bfs::per_ddc,
-	  bfs::prober,
-	  bfs::soft_majo,
-	  bfs::soft_tf2t,
-	  bfs::spiteful,
-	  bfs::tit_for_tat
-	}, 1);
+	ofstream file;
+	file.open("uspjesnost-kroz-treniranje.csv");
+	file << "iteracija;" << "mi;" << "tft;" << "random;" << "gradual;" << "mi-s;" << "mi-n;" << "oni-s;" << "oni-n;\n";
 
-	const int koliko_pokusaja = 1;
-	struct okruzenje
-	{
-		parametrizirana_strategija* moja_strategija;
-		igrac* ja;
-		stanje st;
-		parametrizirana_strategija::mutacija prethodna_mut; //, pretprethodna_mut;
-
-		okruzenje() : moja_strategija(new parametrizirana_strategija()),
-			ja(new igrac{ moja_strategija }),
-			prethodna_mut(*moja_strategija)
-			// , pretprethodna_mut(*moja_strategija)
-		{
-
-		}
-
-	};
-
-	array<okruzenje, koliko_pokusaja> okruzenja;
-
-	stanje test_tft, test_rnd, test_grad;
-	int test_grad_cnt = 0;
-
-  int jas, jan, onis, onin;
-  jas = jan = onis = onin = 0;
 	for (int iteracija = 0; iteracija < 1000; ++iteracija)
 	{
 
@@ -100,7 +170,7 @@ int main()
 			test_tft.osvjezi(akcija::s, i->potez(test_tft));
 		else
 			test_tft.osvjezi(nti_korak(test_tft, -1), i->potez(test_tft));
-		test_rnd.osvjezi(rand->Produce() ? akcija::s : akcija::n, i->potez(test_rnd));
+		test_rnd.osvjezi(gen->Produce() ? akcija::s : akcija::n, i->potez(test_rnd));
 
 		akcija akc(akcija::s); // za gradual
 		if (test_grad.povijest_za_trenutnog().size() == 0)
@@ -158,6 +228,7 @@ int main()
 			else if (primjena_mutacije && ishod.first == akcija::s && ishod.second == akcija::n)
 			{
 				//nagradi(prethodna_mut, 0);
+				prethodna_mut.anti_primjena();
 			}
 			//if (primjena_mutacije)
 			//{
@@ -208,15 +279,16 @@ int main()
 		}
 
 
-
-		cout << "iteracija " << iteracija + 1 << "\t: " << okruzenja[0].st.uspjesnost()
-			<< "\ttft: " << test_tft.uspjesnost()
-			<< "\trandom: " << test_rnd.uspjesnost()
-			<< "\tgradual: " << test_grad.uspjesnost()
-      << "\tja, oni: " << jas << " " << jan << " " << onis << " " << onin
-      << endl;
+		
+		file << iteracija + 1 << ";" << okruzenja[0].st.uspjesnost()
+			<< ";" << test_tft.uspjesnost()
+			<< ";" << test_rnd.uspjesnost()
+			<< ";" << test_grad.uspjesnost()
+			<< ";" << jas << ";" << jan << ";" << onis << ";" << onin << ";\n";
 
 	}
+
+	file.close();
 
 	for (auto &okruzenje : okruzenja)
 	{
@@ -250,74 +322,44 @@ int main()
 
 	// --- evaluacija (testiranje) ---
 
-	int pause;
-	cin >> pause;
-
 	test_tft = stanje(), test_rnd = stanje(), test_grad = stanje();
 	test_grad_cnt = 0;
+	jas = jan = onis = onin = 0;
 
-  jas = jan = onis = onin = 0;
+	file.open("uspjesnost-kroz-testiranje.csv");
+	file << "iteracija;" << "mi;" << "tft;" << "random;" << "gradual;" << "mi-s;" << "mi-n;" << "oni-s;" << "oni-n;\n";
+
+	okruzenja[0].st.povijest = map<int, vector<interakcija>>();
 	for (int iteracija = 0; iteracija < 1000; ++iteracija)
 	{
-		igrac *i = pop.random_izvuci_igraca();
-
-		test_rnd.s_kime_trebam_igrati = test_tft.s_kime_trebam_igrati = test_grad.s_kime_trebam_igrati = i;
-		if (test_tft.povijest_za_trenutnog().size() == 0)
-			test_tft.osvjezi(akcija::s, i->potez(test_tft));
-		else
-			test_tft.osvjezi(nti_korak(test_tft, -1), i->potez(test_tft));
-		test_rnd.osvjezi(rand->Produce() ? akcija::s : akcija::n, i->potez(test_rnd));
-
-		akcija akc(akcija::s); // za gradual
-		if (test_grad.povijest_za_trenutnog().size() == 0)
-		{
-			test_grad_cnt = 0;
-		}
-		else if ((test_grad_cnt == 1) || (test_grad_cnt == 2))
-		{
-			test_grad_cnt--;
-			akc = akcija::s;
-		}
-		else if (test_grad_cnt > 2)
-		{
-			test_grad_cnt--;
-			akc = akcija::n;
-		}
-		else if (nti_korak(test_grad, -1) == akcija::n)
-		{
-			test_grad_cnt = izbroji_akcije(test_grad, akcija::n) + 1;
-			akc = akcija::n;
-		}
-		else
-			akc = akcija::s;
-		test_grad.osvjezi(akc, i->potez(test_grad));
-
-
-		auto &okr = okruzenja[0];
-		{
-			parametrizirana_strategija *moja_strategija = okr.moja_strategija;
-			igrac *ja = okr.ja;
-			stanje &st = okr.st;
-			parametrizirana_strategija::mutacija &prethodna_mut = okr.prethodna_mut;
-
-
-			st.s_kime_trebam_igrati = i;
-
-			auto ishod = st.osvjezi(ja->potez(st), i->potez(st));
-      if (ishod.first == akcija::s) ++jas; else ++jan;
-      if (ishod.second == akcija::s) ++onis; else ++onin;
-
-		}
-
-		cout << "test iteracija " << iteracija + 1 << "\t: " << okruzenja[0].st.uspjesnost()
-			<< "\ttft: " << test_tft.uspjesnost()
-			<< "\trandom: " << test_rnd.uspjesnost()
-			<< "\tgradual: " << test_grad.uspjesnost()
-      << "\tja, oni: " << jas << " " << jan << " " << onis << " " << onin
-      << endl;
-
+		kolo(iteracija, file);
 	}
 
+	file.close();
+
+	// evaluacija za svakog od igraca
+
+	int j = 1;
+	for each (igrac *i in pop.obicni_igraci)
+	{
+		test_tft = stanje(), test_rnd = stanje(), test_grad = stanje();
+		okruzenja[0].st.povijest = map<int, vector<interakcija>>();
+
+		test_grad_cnt = 0;
+		jas = jan = onis = onin = 0;
+
+		stringstream name;
+		name << "igrac_" << j++ << ".csv";
+
+		file.open(name.str());
+		file << "iteracija;" << "mi;" << "tft;" << "random;" << "gradual;" << "mi-s;" << "mi-n;" << "oni-s;" << "oni-n;\n";
+
+		for (int iteracija = 0; iteracija < 1000; ++iteracija)
+		{
+			kolo(iteracija, file);
+		}
+		file.close();
+	}
 
 
 	return 0;

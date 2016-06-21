@@ -219,6 +219,40 @@ namespace bfs
 
 
   card
+  gradual (int X)
+  {
+    /* The gradual strategy is studied in beaufils-delahaye-mathieu:meeting.  It
+       cooperates until the opponent defects. Then after the first defection it
+       defects one time, and cooperate two times, ... after the nth defections it
+       reacts with n consecutive defections and cooperates two times.  */
+
+    static int n[1] = {0};
+
+    if (turn == 1)
+    {
+      n[X] = 0;
+      return COOPERATE;
+    }
+    else if (n[X] == 1 || n[X] == 2)
+    {
+      n[X]--;
+      return COOPERATE;
+    }
+    else if (n[X] > 2)
+    {
+      n[X]--;
+      return DEFECT;
+    }
+    else if (RH[turn - 1] == DEFECT)
+    {
+      n[X] = nbD(RH) + 2 - 1;
+      return DEFECT;
+    }
+    else
+      return COOPERATE;
+  }
+
+  card
   gradual_killer(int X)
   {
     /* This strategy has been built on a late friday evening in order to be sure

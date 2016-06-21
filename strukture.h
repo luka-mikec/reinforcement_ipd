@@ -27,6 +27,10 @@ std::ostream& operator<<(std::ostream& out, const akcija& val)
     out << "n";
   return out;
 }
+int aint(akcija a)
+{
+  return a == akcija::n ? 0 : 1;
+}
 
 typedef pair<akcija, akcija> interakcija;
 const vector<interakcija> prazni_vec_int;
@@ -129,6 +133,15 @@ akcija nti_korak(const stanje& st, int n)
     n += st.povijest_za_trenutnog().size();
   }
   return st.povijest_za_trenutnog().at(n).second;
+}
+
+akcija nti_korak_moj(const stanje& st, int n)
+{
+  if (n < 0)
+  {
+    n += st.povijest_za_trenutnog().size();
+  }
+  return st.povijest_za_trenutnog().at(n).first;
 }
 
 akcija vecinska_akcija(const stanje& st)
@@ -467,12 +480,42 @@ struct parametrizirana_strategija : strategija
     }
 
 
-    /*
-     *
-     * ovdje ide kod koji na osnovu tezina odreduje ponasanje
-     * osnovna ideja: imati w (na pocetku ~= 0.5) kojeg ostale tezine modificiraju
-     *
-     */
+
+    if (tr_korak >= 20)
+    {
+      int prozori[8] = {0}; // za x, y, z iz {n = 0, s = 1}, na prozori[4 * x + 2 * y + z]
+                            // je broj takvih trojki iz povijesti, gdje su x i y moje akcije,
+                            // a z protivnikova reakcija
+      for (int prozor_pocetak = 0; prozor_pocetak <= tr_korak - 3; ++prozor_pocetak)
+      {
+        int x = aint(nti_korak_moj(st, prozor_pocetak)),
+          y = aint(nti_korak_moj(st, prozor_pocetak + 1)),
+          z = aint(nti_korak(st, prozor_pocetak + 2));
+
+        ++prozori[4 * x + 2 * y + z];
+      }
+
+      int X = aint(nti_korak_moj(st, tr_korak - 2)),
+        Y = aint(nti_korak_moj(st, tr_korak - 1));
+
+      // pokusamo predvidjeti z
+
+      int adresa = 4 * X + 2 * Y;
+      int Z_n = prozori[adresa],
+        Z_s = prozori[adresa + 1];
+      if (Z_n > 2 * Z_s)
+        acm -= 5;
+      if (Z_s > 2 * Z_n)
+        acm += 5;
+
+      // bez prozora: 73
+      // > 2 *, +-1 daje 73
+      // > 2 *, +-10 daje 74
+      // > 1 *, +-10 daje 74
+      // > 1.1 *, +- 10 daje
+    }
+
+
 
     return (acm >= 0.5) ? akcija::s : akcija::n;
   }

@@ -43,7 +43,7 @@ int main()
     bfs::soft_tf2t,
     bfs::spiteful,
     bfs::tit_for_tat
-  }, 2);
+  }, 1);
 
   const int koliko_pokusaja = 500;
   struct okruzenje
@@ -65,7 +65,9 @@ int main()
 
   array<okruzenje, koliko_pokusaja> okruzenja;
 
-  stanje test_tft, test_rnd;
+  stanje test_tft, test_rnd, test_grad;
+  int test_grad_cnt = 0;
+
 
   for (int iteracija = 0; iteracija < 1000; ++iteracija)
   {
@@ -85,12 +87,37 @@ int main()
 
     igrac *i = pop.random_izvuci_igraca();
 
-    test_rnd.s_kime_trebam_igrati = test_tft.s_kime_trebam_igrati = i;
+    test_rnd.s_kime_trebam_igrati = test_tft.s_kime_trebam_igrati = test_grad.s_kime_trebam_igrati = i;
     if (test_tft.povijest_za_trenutnog().size() == 0)
       test_tft.osvjezi(akcija::s, i->potez(test_tft));
     else
       test_tft.osvjezi(nti_korak(test_tft, -1), i->potez(test_tft));
     test_rnd.osvjezi(rand() % 2 ? akcija::s : akcija::n, i->potez(test_rnd));
+
+    akcija akc(akcija::s); // za gradual
+    if (test_grad.povijest_za_trenutnog().size() == 0)
+    {
+      test_grad_cnt = 0;
+    }
+    else if ((test_grad_cnt == 1) || (test_grad_cnt == 2))
+    {
+      test_grad_cnt--;
+      akc = akcija::s;
+    }
+    else if (test_grad_cnt > 2)
+    {
+      test_grad_cnt--;
+      akc = akcija::n;
+    }
+    else if (nti_korak(test_grad, -1) == akcija::n)
+    {
+      test_grad_cnt = max(5, izbroji_akcije(test_grad, akcija::n) + 1);
+      akc = akcija::n;
+    }
+    else
+      akc = akcija::s;
+    test_grad.osvjezi(akc, i->potez(test_grad));
+
 
     for (auto &okr : okruzenja)
     {
@@ -166,8 +193,8 @@ int main()
         int pretinac = i / 100;
 
         okruzenje &okr = okruzenja[i];
-        //if (iteracija % 10 == 0)
-          okr.moja_strategija->vektor_tezina = cuvanje[pretinac].moja_strategija->vektor_tezina;
+        //if (iteracija % 4 == 0)
+        okr.moja_strategija->vektor_tezina = cuvanje[pretinac].moja_strategija->vektor_tezina;
 
         parametrizirana_strategija::mutacija mut(* okr.moja_strategija);
         mut.primjena();
@@ -179,7 +206,8 @@ int main()
 
     cout << "iteracija " << iteracija + 1 << "\t: " << okruzenja[0].st.uspjesnost()
          << "\ttft: " << test_tft.uspjesnost()
-         << "\trandom: " << test_rnd.uspjesnost() << endl;
+         << "\trandom: " << test_rnd.uspjesnost()
+         << "\tgradual: " << test_grad.uspjesnost() << endl;
 
   }
 

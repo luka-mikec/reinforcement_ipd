@@ -16,6 +16,10 @@
 #include "reinforcement_ipd\reinforcement_ipd\Generator.h"
 using namespace std;
 
+
+Double_Generator *rand_epsilon = new Double_Generator(-0.2, 0.2);
+Int_Generator *rand_mutation = new Int_Generator(0, 13);
+
 enum class akcija
 {
   s, n
@@ -217,7 +221,7 @@ struct parametrizirana_strategija : strategija
     vektor_tezina.resize(14);
 
     for (auto& tezina : vektor_tezina)
-      tezina = -1.0;
+      tezina = 0.5;
   }
 
   enum class utjecaj { n_ili_ne, nista, s_ili_da };
@@ -289,12 +293,11 @@ struct parametrizirana_strategija : strategija
     tezina_t epsilon() {
 		return rand_epsilon->Produce(); /* -0.2 do +0.2 */ }
     void clamp(tezina_t& t) { if (t < 0) t = 0; if (t > 1) t = 1; }
-	Double_Generator *rand_epsilon = new Double_Generator(-0.2, 0.2);
-	Int_Generator *rand_mutation = new Int_Generator(0, 4);
+	
 
   };
 
-
+;
 
   virtual akcija operator()(const stanje& st)
   {
@@ -555,11 +558,11 @@ parametrizirana_strategija::mutacija parametrizirana_strategija::mutacija::irele
 
 parametrizirana_strategija::mutacija::mutacija(parametrizirana_strategija &_s) : s(_s)
 {
-  for (int i = 0; i < s.vektor_tezina.size(); ++i)
+  for (int i = 0; i < 4; ++i)
   {
-    (*this)[i].first = (*this)[i].second = s.vektor_tezina[i];
-    if (rand_mutation->Produce() % 5 == 0)
-      clamp((*this)[i].second += epsilon());
+	int j = rand_mutation->Produce();
+    (*this)[j].first = (*this)[j].second = s.vektor_tezina[j];
+    clamp((*this)[j].second += epsilon());
   }
 }
 

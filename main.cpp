@@ -111,7 +111,7 @@ int main()
     }
     else if (nti_korak(test_grad, -1) == akcija::n)
     {
-      test_grad_cnt = max(5, izbroji_akcije(test_grad, akcija::n) + 1);
+      test_grad_cnt = izbroji_akcije(test_grad, akcija::n) + 1;
       akc = akcija::n;
     }
     else

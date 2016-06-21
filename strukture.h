@@ -266,13 +266,13 @@ struct parametrizirana_strategija : strategija
     void primjena()
     {
       for (auto& par : *this)
-       s.vektor_tezina[par.first] += par.second.second - par.second.first;
+       clamp(s.vektor_tezina[par.first] += par.second.second - par.second.first);
     }
 
     void anti_primjena()
     {
       for (auto& par : *this)
-        s.vektor_tezina[par.first] = par.second.first;
+        clamp(s.vektor_tezina[par.first] = par.second.first);
     }
 
 

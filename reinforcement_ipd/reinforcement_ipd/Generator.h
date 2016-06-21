@@ -25,14 +25,15 @@ public:
 	Int_Generator(int a, int b)
 	{
 		distribution = new std::uniform_int_distribution<int>(a, b);
+		generator = new std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count());
 	}
 	int Produce()
 	{
-		return (*distribution)(generator);
+		return (*distribution)(*generator);
 	}
 
 private:
-	std::default_random_engine generator;
+	std::default_random_engine *generator;
 	std::uniform_int_distribution<int>* distribution;
 };
 
